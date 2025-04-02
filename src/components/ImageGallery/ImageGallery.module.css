@@ -1,0 +1,27 @@
+.imageList {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.imageItem {
+  transition: transform 0.25s ease, border-color 0.25s ease;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: 6px;
+
+  &:hover,
+  &:focus {
+    transform: scale(1.05);
+    border-color: #6979f8;
+  }
+}
+
+.image {
+  border-radius: 6px;
+  max-width: 250px;
+  object-fit: cover;
+}
