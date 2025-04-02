@@ -1,4 +1,4 @@
-# Image Search App
+# 🔎Image Search App
 
 This project allows users to search for images using keywords. The user can input search queries, and the app will display relevant images from an external API.
 
