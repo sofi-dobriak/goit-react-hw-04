@@ -3,7 +3,7 @@ import SearchBar from './components/SearchBar/SearchBar';
 import ImageGallery from './components/ImageGallery/ImageGallery';
 import Container from './components/Container/Container';
 import Loader from './components/Loader/Loader';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ErrorMessage from './components/ErrorMessage/ErrorMessage';
 import LoadMoreBtn from './components/LoadMoreBtn/LoadMoreBtn';
 import ImageModal from './components/ImageModal/ImageModal';
@@ -23,47 +23,43 @@ function App() {
     const [notFoundMessage, setNotFoundMessage] = useState('');
 
     const handleSearch = async newQuery => {
-        try {
-            setImages([]);
-            setError(false);
-            setLoadMore(false);
-            setLoading(true);
-            setPage(1);
-            setQuery(newQuery);
-            setNotFoundMessage('');
-
-            const data = await fetchImages(newQuery);
-
-            if (data.results.length === 0) {
-                setNotFoundMessage('No images found for your search. Try something else!');
-            }
-
-            setImages(data.results);
-            setLoadMore(data.total > 12);
-        } catch (error) {
-            setError(true);
-        } finally {
-            setLoading(false);
-        }
+        setQuery(newQuery);
+        setImages([]);
+        setPage(1);
+        setNotFoundMessage('');
+        setError(false);
     };
 
-    const loadMoreImages = async () => {
-        try {
-            setLoading(true);
-            setLoadMore(false);
+    useEffect(() => {
+        if (!query) return;
 
-            const nextPage = page + 1;
-            const data = await fetchImages(query, nextPage);
+        const fetchImagesData = async () => {
+            try {
+                setLoading(true);
+                setError(false);
 
-            setPage(nextPage);
-            setImages(prevImages => [...prevImages, ...data.results]);
-            setLoadMore(data.total > nextPage * 12);
-        } catch (error) {
-            setError(true);
-            setLoadMore(false);
-        } finally {
-            setLoading(false);
-        }
+                const data = await fetchImages(query, page);
+
+                if (data.results.length === 0) {
+                    setNotFoundMessage('No images found for your search. Try something else!');
+                }
+
+                setImages(prevImages => {
+                    return page === 1 ? data.results : [...prevImages, ...data.results];
+                });
+                setLoadMore(data.total > page * 12);
+            } catch (error) {
+                setError(true);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchImagesData();
+    }, [query, page]);
+
+    const loadMoreImages = () => {
+        setPage(prevPage => prevPage + 1);
     };
 
     function openModal(image) {
@@ -83,9 +79,9 @@ function App() {
                 <Toaster position='bottom-right' reverseOrder={false} />
                 {notFoundMessage && <NotFoundImages message={notFoundMessage} />}
                 {images.length > 0 && <ImageGallery images={images} openModal={openModal} />}
-                {loading && <Loader loading={loading} />}
+                {loading && <Loader />}
                 {error && <ErrorMessage />}
-                {loadMore && <LoadMoreBtn onClick={loadMoreImages} />}
+                {loadMore && !loading && <LoadMoreBtn onClick={loadMoreImages} />}
                 {modalIsOpen && <ImageModal image={selectedImage} closeModal={closeModal} />}
             </Container>
         </>
